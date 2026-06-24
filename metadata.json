@@ -1,0 +1,6 @@
+{
+  "name": "Java Base",
+  "description": "Uma base de conhecimento pessoal sobre Java com artigos técnicos, busca em tempo real e exemplos de código interativos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

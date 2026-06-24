@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.2" />
+    <title>Java Base — Base de Conhecimento Pessoal</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238b5cf6'><path d='M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z'/><path d='M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z'/></svg>" />
+    <!-- Google Fonts: Inter para texto e JetBrains Mono para código -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS Estilos -->
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
+  <body>
+    <!-- BACKGROUND INSPIRADO NA IMAGEM -->
+    <div class="glowing-background">
+      <div class="bg-shape solid-circle-top-left"></div>
+      <div class="bg-shape solid-circle-left"></div>
+      <div class="bg-shape solid-circle-bottom-right"></div>
+      <div class="bg-shape solid-circle-far-bottom-right"></div>
+      
+      <div class="bg-shape neon-line diagonal-line-1"></div>
+      <div class="bg-shape neon-line diagonal-line-2"></div>
+      
+      <div class="bg-shape glowing-ring ring-1"></div>
+      <div class="bg-shape glowing-ring ring-2"></div>
+      <div class="bg-shape glowing-ring ring-3"></div>
+    </div>
+    
+    <!-- GLOBAL APPLE-STYLE HEADER -->
+    <header class="app-header">
+      <div class="header-container">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="header-logo" onclick="goHome();" style="cursor: pointer;">
+            <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z"/>
+              <path d="M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z"/>
+            </svg>
+            <span class="logo-text">Java <span style="color: var(--accent);">Base</span></span>
+          </div>
+        </div>
+        
+        <div class="search-and-nav-container" style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 540px;">
+          <div class="search-wrapper" style="margin: 0; flex: 1; max-width: 100%;">
+            <svg class="search-icon" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.72 3.72a.75.75 0 1 1-1.06 1.06l-3.72-3.72ZM11.5 7a4.5 4.5 0 1 0-9 0 4.5 4.5 0 0 0 9 0Z"/>
+            </svg>
+            <input type="text" id="search-input" placeholder="Buscar..." autocomplete="off">
+            
+            <button id="search-clear-btn" class="clear-btn hidden" title="Limpar busca" onclick="clearSearch()">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 1 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
+              </svg>
+            </button>
+          </div>
+          <span id="nav-btn-cheatsheets" class="nav-item" style="white-space: nowrap; font-weight: 600;" onclick="openCheatsheet(state.activeCategory)">Dicas</span>
+        </div>
+        
+        <div class="header-right-meta">
+          <span class="tag-version">Java 21 LTS</span>
+          <button id="theme-toggle-btn" class="theme-toggle-btn" title="Alternar tema" onclick="toggleTheme()">
+            <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5M2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1m18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1M11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1m0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1M5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41M5.99 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.3 22c5.36 0 9.7-4.34 9.7-9.7 0-2.5-.95-4.78-2.51-6.5-.42-.46-1.12-.27-1.28.32-.86 3.14-3.73 5.46-7.14 5.46-1.63 0-3.13-.53-4.35-1.43-.52-.39-1.25-.02-1.25.63A9.704 9.704 0 0 0 12.3 22z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- BOTÃO HAMBURGUER (Mobile) -->
+        <button id="menu-hamburger-btn" class="menu-hamburger-btn" onclick="openDrawer()" aria-label="Abrir menu">
+          <svg viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="1" x2="22" y2="1" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round"/>
+            <line x1="0" y1="8" x2="22" y2="8" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round"/>
+            <line x1="0" y1="15" x2="22" y2="15" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <div id="reading-progress" class="hidden" style="position: fixed; top: 52px; left: 0; height: 3px; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%); width: 0%; z-index: 101; transition: width 0.08s linear;"></div>
+
+    <div class="app-layout">
+      <!-- SIDEBAR DESKTOP -->
+      <aside class="sidebar">
+        <div>
+          <p class="sidebar-title">Categories</p>
+          <ul id="sidebar-categories" class="category-list">
+            <!-- Injetado por JS -->
+          </ul>
+        </div>
+        
+
+
+        <div class="sidebar-footer-container">
+          <div class="sidebar-footer">
+            <p>Base de conhecimento estática offline-first.</p>
+            <p class="footer-version">v1.1.0 — Apple Design</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+      <main class="main-content">
+        <div class="main-scroll-area">
+          <!-- CATEGORIAS MOBILE -->
+          <nav id="mobile-categories" class="mobile-categories">
+            <!-- Injetado por JS -->
+          </nav>
+
+          <!-- VIEW 1: HOME (LISTAGEM DE ARTIGOS) -->
+          <div id="home-view" class="view">
+            <!-- BANNER PRINCIPAL GRANDE -->
+            <div class="home-hero-banner" style="width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); height: 320px;">
+              <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZGVzZW52b2x2ZWRvciUyMGphdmF8ZW58MHx8MHx8fDA%3D" 
+                   alt="Java Base Banner" 
+                   referrerPolicy="no-referrer" 
+                   style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease-out;" 
+                   onmouseenter="this.style.transform='scale(1.02)'" 
+                   onmouseleave="this.style.transform='scale(1.0)'">
+            </div>
+            
+            <!-- INTRODUÇÃO DO SITE / BLOCO BEM VINDO -->
+            <div id="home-intro-card" class="home-intro border-0" style="border: none !important;">
+              <h2 class="home-intro-title flex items-center justify-center w-full gap-2.5">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: var(--accent);">
+                  <path d="M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z"/>
+                  <path d="M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z"/>
+                </svg>
+                Bem-vindo ao Java Base
+              </h2>
+              <p class="home-intro-text">
+                O <strong>Java Base</strong> é uma base de conhecimento offline-first voltada para desenvolvedores que buscam dominar as novidades e melhores práticas do ecossistema Java moderno (do Java 8 ao 21 LTS). Explore tópicos fundamentais e avançados como Concorrência, Streams API, Virtual Threads, Programação Orientada a Objetos e Spring de forma totalmente prática.
+              </p>
+              <div class="home-intro-stats">
+                <div class="stat-item">
+                  <span class="stat-val" id="stats-articles-count">7</span>
+                  <span class="stat-lbl">Artigos</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-val">8</span>
+                  <span class="stat-lbl">Categorias</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-val">100%</span>
+                  <span class="stat-lbl">Prático</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- VISITADOS RECENTEMENTE -->
+            <div id="recent-articles-section" style="margin-bottom: 32px; animation: appleFadeIn 0.35s ease-out;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin: 0;">Visitados Recentemente</p>
+                <button onclick="clearRecentHistory()" style="background: none; border: none; color: var(--accent); font-size: 11px; font-weight: 500; cursor: pointer; padding: 0;">Limpar histórico</button>
+              </div>
+              <div id="recent-articles-list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Injetado por JS -->
+              </div>
+              <p id="recent-empty" class="hidden" style="color:var(--text-secondary); font-size:12px; margin: 0; font-style: italic;">Nenhum artigo visitado nesta sessão.</p>
+            </div>
+
+            <!-- TRILHAS DE SÉRIES DE ARTIGOS -->
+            <div id="home-series-section" style="margin-bottom: 32px; animation: appleFadeIn 0.35s ease-out;">
+              <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 16px;">Trilhas de Aprendizado</p>
+              <div id="home-series-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(48%, 1fr)); gap: 16px;">
+                <!-- Injetado por JS -->
+              </div>
+            </div>
+
+            <!-- INDICADOR DE FILTRO ATIVO -->
+            <div id="filter-status-bar" class="filter-status-bar">
+              <!-- Injetado por JS -->
+            </div>
+
+            <!-- GRID DE ARTIGOS -->
+            <div id="articles-grid" class="articles-grid">
+              <!-- Injetado por JS -->
+            </div>
+
+            <!-- EMPTY STATE (SEM RESULTADOS) -->
+            <div id="empty-state" class="empty-state hidden">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <h3 class="empty-title">Nenhum artigo encontrado</h3>
+              <p class="empty-desc">Sua busca por "<span id="empty-search-term" style="color:var(--accent);font-weight:600;"></span>" não retornou resultados.</p>
+              <button class="apple-button" onclick="clearSearch()">Limpar Busca</button>
+            </div>
+          </div>
+
+          <!-- VIEW 2: LEITURA DO ARTIGO -->
+          <div id="article-view" class="view hidden">
+            <div class="back-link" onclick="closeArticle()">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h8.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"/>
+              </svg>
+              Voltar para a listagem
+            </div>
+
+            <!-- THREE COLUMN ARTICLE LAYOUT -->
+            <div style="display: flex; gap: 48px; width: 100%; position: relative; align-items: flex-start;">
+              <article class="article-container" style="flex: 1; max-width: 960px; min-width: 0;">
+                <header class="article-header">
+                  <div class="article-meta-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                      <span id="art-category" class="badge"></span>
+                      <span id="art-date" class="article-date"></span>
+                      <span id="art-reading-time" class="article-reading-time"></span>
+                    </div>
+                    <button class="print-btn" onclick="window.print()" style="background: none; border: none; color: var(--accent); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; font-family: var(--font-sans); padding: 4px 8px; border-radius: 6px; transition: background-color 0.2s;">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3m-3 11H8v-5h8zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1M18 3H6v4h12z"/>
+                      </svg>
+                      Imprimir
+                    </button>
+                  </div>
+                  <h1 id="art-title" class="article-title"></h1>
+                  <div id="art-tags" class="tags-container"></div>
+                  
+                  <!-- HISTÓRICO DE ATUALIZAÇÕES DO ARTIGO -->
+                  <div id="art-changelog-section" style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px; font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 12px;">
+                    <h4 style="font-size: 12px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">📋 Histórico de Alterações</h4>
+                    <div id="changelog-container">
+                      <!-- Injetado por JS -->
+                    </div>
+                  </div>
+                </header>
+
+                <div id="article-content" class="article-body">
+                  <!-- Conteúdo injetado por JS -->
+                </div>
+
+                <!-- ARTIGOS RELACIONADOS -->
+                <div id="related-articles-section" style="margin-top: 48px; border-top: 1px solid var(--border); padding-top: 32px; animation: appleFadeIn 0.3s ease-out;">
+                  <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); margin-bottom: 20px;">Artigos Relacionados</p>
+                  <div id="related-articles-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(48%, 1fr)); gap: 16px;">
+                    <!-- Injetado por JS -->
+                  </div>
+                </div>
+
+                <!-- NAVEGAÇÃO ENTRE ARTIGOS GERAL -->
+                <nav class="article-nav" style="margin-top: 32px;">
+                  <div id="nav-prev" class="nav-box">
+                    <!-- Injetado por JS -->
+                  </div>
+                  <div id="nav-next" class="nav-box">
+                    <!-- Injetado por JS -->
+                  </div>
+                </nav>
+              </article>
+
+              <!-- TOC LATERAL -->
+              <aside id="toc-container" style="width: 200px; flex-shrink: 0; position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; padding-left: 16px; border-left: 1px solid var(--border); display: block;">
+                <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 16px; margin-top: 0;">Índice</p>
+                <ul id="toc-list" style="list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0;">
+                  <!-- Injetado por JS -->
+                </ul>
+              </aside>
+            </div>
+          </div>
+
+          <!-- VIEW 4: CHEATSHEET VIEW -->
+          <div id="cheatsheet-view" class="view hidden" style="animation: appleFadeIn 0.35s ease-out;">
+            <div class="back-link" onclick="goHome()" style="margin-bottom: 24px;">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h8.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"/>
+              </svg>
+              Voltar para a listagem
+            </div>
+
+            <div class="cheatsheet-header" style="margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+              <h1 id="cheatsheet-title" class="article-title" style="margin-bottom: 8px;"></h1>
+              <p id="cheatsheet-subtitle" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
+            </div>
+
+            <div id="cheatsheet-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(48%, 1fr)); gap: 24px;">
+              <!-- Injetado por JS -->
+            </div>
+          </div>
+
+          <!-- VIEW 5: SNIPPETS VIEW -->
+          <div id="snippets-view" class="view hidden" style="animation: appleFadeIn 0.35s ease-out;">
+            <div class="back-link" onclick="goHome()" style="margin-bottom: 24px;">
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h8.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"/>
+              </svg>
+              Voltar para a listagem
+            </div>
+
+            <div class="snippets-header" style="margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+              <h1 class="article-title" style="margin-bottom: 8px;">Snippets Úteis</h1>
+              <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Coleção de códigos rápidos prontos para uso em Java Moderno.</p>
+            </div>
+
+            <div id="snippets-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(48%, 1fr)); gap: 24px;">
+              <!-- Cards de snippets injetados por JS -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- OVERLAY DO DRAWER -->
+    <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+
+    <!-- DRAWER LATERAL -->
+    <div id="mobile-drawer" class="mobile-drawer">
+      <div class="drawer-header">
+        <div class="drawer-logo" onclick="goHome(); closeDrawer();" style="cursor: pointer;">
+          <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px; color: var(--accent);">
+            <path d="M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z"/>
+            <path d="M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z"/>
+          </svg>
+          <span style="font-weight: 600; font-size: 15px; color: var(--text-primary);">Java Base</span>
+        </div>
+        <button class="drawer-close-btn" onclick="closeDrawer()" aria-label="Fechar menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="drawer-body">
+        <div class="drawer-section">
+          <p class="drawer-section-title">Categorias</p>
+          <ul id="drawer-categories" class="category-list">
+            <!-- Injetado por JS -->
+          </ul>
+        </div>
+        
+        <div class="drawer-divider"></div>
+        
+        <div class="drawer-nav-item" onclick="openCheatsheet(state.activeCategory); closeDrawer();">
+          <span>Dicas</span>
+        </div>
+        
+        <div class="drawer-divider"></div>
+      </div>
+      
+      <div class="drawer-footer">
+        <div class="drawer-theme-toggle" onclick="toggleTheme();">
+          <span class="drawer-theme-icon" style="display: flex; align-items: center; justify-content: center;">
+            <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;">
+              <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5M2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1m18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1M11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1m0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1M5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41M5.99 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;">
+              <path d="M12.3 22c5.36 0 9.7-4.34 9.7-9.7 0-2.5-.95-4.78-2.51-6.5-.42-.46-1.12-.27-1.28.32-.86 3.14-3.73 5.46-7.14 5.46-1.63 0-3.13-.53-4.35-1.43-.52-.39-1.25-.02-1.25.63A9.704 9.704 0 0 0 12.3 22z"/>
+            </svg>
+          </span>
+          <span class="drawer-theme-label" style="font-weight: 500;">Modo escuro</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHORTCUTS HELP MODAL -->
+    <div id="shortcuts-modal" class="hidden" style="position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 999; animation: appleFadeIn 0.2s ease;">
+      <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; width: 100%; max-width: 440px; padding: 28px; box-shadow: 0 12px 36px rgba(0,0,0,0.25); position: relative;">
+        <button onclick="toggleShortcutsModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+          ⌨️ Atalhos de Teclado
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <span style="color: var(--text-secondary);">Focar campo de busca</span>
+            <kbd style="background-color: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;">/</kbd>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <span style="color: var(--text-secondary);">Limpar busca / Fechar artigo</span>
+            <kbd style="background-color: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">Esc</kbd>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <span style="color: var(--text-secondary);">Artigo Anterior</span>
+            <kbd style="background-color: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;">←</kbd>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <span style="color: var(--text-secondary);">Próximo Artigo</span>
+            <kbd style="background-color: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;">→</kbd>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+            <span style="color: var(--text-secondary);">Imprimir Artigo Ativo</span>
+            <kbd style="background-color: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;">P</kbd>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary);">Mostrar Ajuda de Atalhos</span>
+            <kbd style="background-color: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;">?</kbd>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JAVASCRIPT PRINCIPAL ORQUESTRADOR -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
