@@ -90,6 +90,12 @@ body {
   .app-header {
     padding: 0 24px;
   }
+  .search-and-nav-container {
+    max-width: 280px !important;
+  }
+  #nav-btn-cheatsheets {
+    display: none;
+  }
 }
 .header-container {
   display: flex;
