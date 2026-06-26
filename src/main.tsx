@@ -3,6 +3,14 @@ import { state, saveStateToStorage, loadStateFromStorage } from "./state";
 import { formatDate, escapeHtml, debounce, sortByPopularity, getSearchSnippet } from "./utils";
 import { Article, Series, State } from "./types";
 
+export function normalizarTexto(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 // Expose functions globally for HTML inline onclick event handlers
 declare global {
   interface Window {
@@ -20,6 +28,7 @@ declare global {
     closeDrawer: () => void;
     openSnippets: () => void;
     renderHomeSeries: () => void;
+    updateWelcomeStats: () => void;
   }
 }
 
@@ -128,23 +137,16 @@ window.clearSearch = function() {
 };
 
 /* --- RENDER SIDEBAR CATEGORIES (DESKTOP) --- */
+let coreExpanded = false;
+let advExpanded = false;
+let frameworksExpanded = false;
+let seExpanded = false;
+
 function renderSidebar() {
   const list = document.getElementById('sidebar-categories');
   if (!list) return;
   
   list.innerHTML = '';
-  
-  // Item "Todos os Artigos"
-  const allLi = document.createElement('li');
-  allLi.className = `category-item ${state.activeCategory === 'Todos' ? 'active' : ''}`;
-  allLi.innerHTML = `<span>Todos os Artigos</span>`;
-  allLi.onclick = () => window.selectCategory('Todos');
-  list.appendChild(allLi);
-  
-  // Separator line
-  const divider = document.createElement('div');
-  divider.className = 'sidebar-divider';
-  list.appendChild(divider);
   
   // Helper to construct category items
   const createCatItem = (cat: string) => {
@@ -178,26 +180,316 @@ function renderSidebar() {
   };
 
   // Group 1: Core Concepts
+  const coreHeaderWrapper = document.createElement('div');
+  coreHeaderWrapper.style.display = 'flex';
+  coreHeaderWrapper.style.justifyContent = 'space-between';
+  coreHeaderWrapper.style.alignItems = 'center';
+  coreHeaderWrapper.style.marginTop = '24px';
+  coreHeaderWrapper.style.marginBottom = '8px';
+  coreHeaderWrapper.style.cursor = 'pointer';
+  coreHeaderWrapper.style.userSelect = 'none';
+  
   const coreHeader = document.createElement('p');
   coreHeader.className = 'menu-section-title';
+  coreHeader.style.margin = '0';
+  coreHeader.style.marginTop = '0';
+  coreHeader.style.transition = 'color 0.2s ease';
   coreHeader.textContent = 'Core Concepts';
-  list.appendChild(coreHeader);
+  coreHeaderWrapper.appendChild(coreHeader);
+  
+  const coreToggleBtn = document.createElement('button');
+  coreToggleBtn.className = 'expand-toggle-btn';
+  coreToggleBtn.style.background = 'none';
+  coreToggleBtn.style.border = 'none';
+  coreToggleBtn.style.cursor = 'pointer';
+  coreToggleBtn.style.color = 'var(--text-tertiary)';
+  coreToggleBtn.style.display = 'flex';
+  coreToggleBtn.style.alignItems = 'center';
+  coreToggleBtn.style.justifyContent = 'center';
+  coreToggleBtn.style.padding = '4px';
+  coreToggleBtn.style.borderRadius = '4px';
+  coreToggleBtn.style.transition = 'color 0.2s, background-color 0.2s';
+  coreToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${coreExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  
+  coreToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    coreExpanded = !coreExpanded;
+    renderSidebar();
+  };
+  coreHeaderWrapper.onclick = () => {
+    coreExpanded = !coreExpanded;
+    renderSidebar();
+  };
+  coreHeaderWrapper.addEventListener('mouseenter', () => {
+    coreHeader.style.color = 'var(--accent)';
+    coreToggleBtn.style.color = 'var(--accent)';
+  });
+  coreHeaderWrapper.addEventListener('mouseleave', () => {
+    coreHeader.style.color = 'var(--text-tertiary)';
+    coreToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  coreHeaderWrapper.appendChild(coreToggleBtn);
+  list.appendChild(coreHeaderWrapper);
 
-  const coreCats = ['Generics', 'Streams', 'Collections', 'OOP'];
+  const coreWrapper = document.createElement('div');
+  coreWrapper.className = 'category-group-wrapper';
+  coreWrapper.style.overflow = 'hidden';
+  coreWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const coreCats = ['Generics', 'Collections', 'OOP'];
   coreCats.forEach(cat => {
-    list.appendChild(createCatItem(cat));
+    coreWrapper.appendChild(createCatItem(cat));
   });
 
-  // Group 2: Advanced
+  if (coreExpanded) {
+    coreWrapper.style.maxHeight = '200px';
+    coreWrapper.style.opacity = '1';
+    coreWrapper.style.marginBottom = '12px';
+  } else {
+    coreWrapper.style.maxHeight = '0px';
+    coreWrapper.style.opacity = '0';
+    coreWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(coreWrapper);
+
+  // Group 2: Advanced Java
+  const advHeaderWrapper = document.createElement('div');
+  advHeaderWrapper.style.display = 'flex';
+  advHeaderWrapper.style.justifyContent = 'space-between';
+  advHeaderWrapper.style.alignItems = 'center';
+  advHeaderWrapper.style.marginTop = '12px';
+  advHeaderWrapper.style.marginBottom = '8px';
+  advHeaderWrapper.style.cursor = 'pointer';
+  advHeaderWrapper.style.userSelect = 'none';
+  
   const advHeader = document.createElement('p');
   advHeader.className = 'menu-section-title';
-  advHeader.textContent = 'Advanced';
-  list.appendChild(advHeader);
-
-  const advCats = ['Concurrency', 'JVM', 'Spring', 'Misc'];
-  advCats.forEach(cat => {
-    list.appendChild(createCatItem(cat));
+  advHeader.style.margin = '0';
+  advHeader.style.marginTop = '0';
+  advHeader.style.transition = 'color 0.2s ease';
+  advHeader.textContent = 'Advanced Java';
+  advHeaderWrapper.appendChild(advHeader);
+  
+  const advToggleBtn = document.createElement('button');
+  advToggleBtn.className = 'expand-toggle-btn';
+  advToggleBtn.style.background = 'none';
+  advToggleBtn.style.border = 'none';
+  advToggleBtn.style.cursor = 'pointer';
+  advToggleBtn.style.color = 'var(--text-tertiary)';
+  advToggleBtn.style.display = 'flex';
+  advToggleBtn.style.alignItems = 'center';
+  advToggleBtn.style.justifyContent = 'center';
+  advToggleBtn.style.padding = '4px';
+  advToggleBtn.style.borderRadius = '4px';
+  advToggleBtn.style.transition = 'color 0.2s, background-color 0.2s';
+  advToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${advExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  
+  advToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    advExpanded = !advExpanded;
+    renderSidebar();
+  };
+  advHeaderWrapper.onclick = () => {
+    advExpanded = !advExpanded;
+    renderSidebar();
+  };
+  advHeaderWrapper.addEventListener('mouseenter', () => {
+    advHeader.style.color = 'var(--accent)';
+    advToggleBtn.style.color = 'var(--accent)';
   });
+  advHeaderWrapper.addEventListener('mouseleave', () => {
+    advHeader.style.color = 'var(--text-tertiary)';
+    advToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  advHeaderWrapper.appendChild(advToggleBtn);
+  list.appendChild(advHeaderWrapper);
+
+  const advWrapper = document.createElement('div');
+  advWrapper.className = 'category-group-wrapper';
+  advWrapper.style.overflow = 'hidden';
+  advWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const advCats = ['Streams', 'Concurrency', 'JVM'];
+  advCats.forEach(cat => {
+    advWrapper.appendChild(createCatItem(cat));
+  });
+
+  if (advExpanded) {
+    advWrapper.style.maxHeight = '200px';
+    advWrapper.style.opacity = '1';
+    advWrapper.style.marginBottom = '12px';
+  } else {
+    advWrapper.style.maxHeight = '0px';
+    advWrapper.style.opacity = '0';
+    advWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(advWrapper);
+
+  // Group 3: Frameworks & Libs
+  const fwHeaderWrapper = document.createElement('div');
+  fwHeaderWrapper.style.display = 'flex';
+  fwHeaderWrapper.style.justifyContent = 'space-between';
+  fwHeaderWrapper.style.alignItems = 'center';
+  fwHeaderWrapper.style.marginTop = '12px';
+  fwHeaderWrapper.style.marginBottom = '8px';
+  fwHeaderWrapper.style.cursor = 'pointer';
+  fwHeaderWrapper.style.userSelect = 'none';
+  
+  const fwHeader = document.createElement('p');
+  fwHeader.className = 'menu-section-title';
+  fwHeader.style.margin = '0';
+  fwHeader.style.marginTop = '0';
+  fwHeader.style.transition = 'color 0.2s ease';
+  fwHeader.textContent = 'Frameworks & Libs';
+  fwHeaderWrapper.appendChild(fwHeader);
+  
+  const fwToggleBtn = document.createElement('button');
+  fwToggleBtn.className = 'expand-toggle-btn';
+  fwToggleBtn.style.background = 'none';
+  fwToggleBtn.style.border = 'none';
+  fwToggleBtn.style.cursor = 'pointer';
+  fwToggleBtn.style.color = 'var(--text-tertiary)';
+  fwToggleBtn.style.display = 'flex';
+  fwToggleBtn.style.alignItems = 'center';
+  fwToggleBtn.style.justifyContent = 'center';
+  fwToggleBtn.style.padding = '4px';
+  fwToggleBtn.style.borderRadius = '4px';
+  fwToggleBtn.style.transition = 'color 0.2s, background-color 0.2s';
+  fwToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${frameworksExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  
+  fwToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    frameworksExpanded = !frameworksExpanded;
+    renderSidebar();
+  };
+  fwHeaderWrapper.onclick = () => {
+    frameworksExpanded = !frameworksExpanded;
+    renderSidebar();
+  };
+  fwHeaderWrapper.addEventListener('mouseenter', () => {
+    fwHeader.style.color = 'var(--accent)';
+    fwToggleBtn.style.color = 'var(--accent)';
+  });
+  fwHeaderWrapper.addEventListener('mouseleave', () => {
+    fwHeader.style.color = 'var(--text-tertiary)';
+    fwToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  fwHeaderWrapper.appendChild(fwToggleBtn);
+  list.appendChild(fwHeaderWrapper);
+
+  const fwWrapper = document.createElement('div');
+  fwWrapper.className = 'category-group-wrapper';
+  fwWrapper.style.overflow = 'hidden';
+  fwWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const fwCats = ['Spring', 'Security'];
+  fwCats.forEach(cat => {
+    fwWrapper.appendChild(createCatItem(cat));
+  });
+
+  if (frameworksExpanded) {
+    fwWrapper.style.maxHeight = '150px';
+    fwWrapper.style.opacity = '1';
+    fwWrapper.style.marginBottom = '12px';
+  } else {
+    fwWrapper.style.maxHeight = '0px';
+    fwWrapper.style.opacity = '0';
+    fwWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(fwWrapper);
+
+  // Group 4: Software Engineering
+  const seHeaderWrapper = document.createElement('div');
+  seHeaderWrapper.style.display = 'flex';
+  seHeaderWrapper.style.justifyContent = 'space-between';
+  seHeaderWrapper.style.alignItems = 'center';
+  seHeaderWrapper.style.marginTop = '12px';
+  seHeaderWrapper.style.marginBottom = '8px';
+  seHeaderWrapper.style.cursor = 'pointer';
+  seHeaderWrapper.style.userSelect = 'none';
+  
+  const seHeader = document.createElement('p');
+  seHeader.className = 'menu-section-title';
+  seHeader.style.margin = '0';
+  seHeader.style.marginTop = '0';
+  seHeader.style.transition = 'color 0.2s ease';
+  seHeader.textContent = 'Engineering & Quality';
+  seHeaderWrapper.appendChild(seHeader);
+  
+  const seToggleBtn = document.createElement('button');
+  seToggleBtn.className = 'expand-toggle-btn';
+  seToggleBtn.style.background = 'none';
+  seToggleBtn.style.border = 'none';
+  seToggleBtn.style.cursor = 'pointer';
+  seToggleBtn.style.color = 'var(--text-tertiary)';
+  seToggleBtn.style.display = 'flex';
+  seToggleBtn.style.alignItems = 'center';
+  seToggleBtn.style.justifyContent = 'center';
+  seToggleBtn.style.padding = '4px';
+  seToggleBtn.style.borderRadius = '4px';
+  seToggleBtn.style.transition = 'color 0.2s, background-color 0.2s';
+  seToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${seExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  
+  seToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    seExpanded = !seExpanded;
+    renderSidebar();
+  };
+  seHeaderWrapper.onclick = () => {
+    seExpanded = !seExpanded;
+    renderSidebar();
+  };
+  seHeaderWrapper.addEventListener('mouseenter', () => {
+    seHeader.style.color = 'var(--accent)';
+    seToggleBtn.style.color = 'var(--accent)';
+  });
+  seHeaderWrapper.addEventListener('mouseleave', () => {
+    seHeader.style.color = 'var(--text-tertiary)';
+    seToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  seHeaderWrapper.appendChild(seToggleBtn);
+  list.appendChild(seHeaderWrapper);
+
+  const seWrapper = document.createElement('div');
+  seWrapper.className = 'category-group-wrapper';
+  seWrapper.style.overflow = 'hidden';
+  seWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const seCats = ['Testing', 'Design Patterns', 'Misc'];
+  seCats.forEach(cat => {
+    seWrapper.appendChild(createCatItem(cat));
+  });
+
+  if (seExpanded) {
+    seWrapper.style.maxHeight = '200px';
+    seWrapper.style.opacity = '1';
+    seWrapper.style.marginBottom = '12px';
+  } else {
+    seWrapper.style.maxHeight = '0px';
+    seWrapper.style.opacity = '0';
+    seWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(seWrapper);
 }
 
 /* --- RENDER MOBILE CATEGORY SCROLLER --- */
@@ -214,7 +506,7 @@ function renderMobileCategories() {
   allBtn.onclick = () => window.selectCategory('Todos');
   scroller.appendChild(allBtn);
   
-  const cats = ["Collections", "Streams", "Concurrency", "Spring", "OOP", "Generics", "JVM", "Misc"];
+  const cats = ["Collections", "Streams", "Concurrency", "Spring", "OOP", "Generics", "JVM", "Testing", "Design Patterns", "Security", "Misc"];
   cats.forEach(cat => {
     const count = ARTICLES.filter(art => art.category === cat).length;
     const btn = document.createElement('button');
@@ -253,25 +545,25 @@ function renderArticles() {
   if (state.activeCategory === 'Todos' && !isSearching) {
     if (banner) banner.style.display = 'block';
     if (introCard) introCard.style.display = 'block';
+    if (seriesSection) seriesSection.style.display = 'block';
   } else {
     if (banner) banner.style.display = 'none';
     if (introCard) introCard.style.display = 'none';
+    if (seriesSection) seriesSection.style.display = 'none';
   }
 
-  if (isSearching || state.activeCategory !== 'Todos') {
+  if (isSearching) {
     if (recentSection) recentSection.style.display = 'none';
-    if (seriesSection) seriesSection.style.display = 'none';
   } else {
     if (recentSection) recentSection.style.display = '';
-    if (seriesSection) seriesSection.style.display = '';
   }
   
   if (isSearching) {
     filtered = filtered.filter(art => {
-      const inTitle = art.title.toLowerCase().includes(query);
-      const inSummary = art.summary.toLowerCase().includes(query);
-      const inContent = art.content.toLowerCase().includes(query);
-      const inTags = art.tags.some(t => t.toLowerCase().includes(query));
+      const inTitle = normalizarTexto(art.title).includes(normalizarTexto(query));
+      const inSummary = normalizarTexto(art.summary).includes(normalizarTexto(query));
+      const inContent = normalizarTexto(art.content).includes(normalizarTexto(query));
+      const inTags = art.tags.some(t => normalizarTexto(t).includes(normalizarTexto(query)));
       return inTitle || inSummary || inContent || inTags;
     });
     
@@ -675,13 +967,13 @@ window.toggleTheme = function() {
   const body = document.body;
   const sunIcons = document.querySelectorAll('.sun-icon');
   const moonIcons = document.querySelectorAll('.moon-icon');
-
+  
   body.classList.toggle('dark-theme');
   document.documentElement.classList.toggle('dark');
-
   const isDark = body.classList.contains('dark-theme');
+  
   localStorage.setItem('java-kb-theme', isDark ? 'dark' : 'light');
-
+  
   sunIcons.forEach(sunIcon => {
     if (isDark) {
       sunIcon.classList.remove('hidden');
@@ -689,7 +981,7 @@ window.toggleTheme = function() {
       sunIcon.classList.add('hidden');
     }
   });
-
+  
   moonIcons.forEach(moonIcon => {
     if (isDark) {
       moonIcon.classList.add('hidden');
@@ -1024,7 +1316,7 @@ window.renderHomeSeries = function() {
     card.style.transition = 'transform 0.15s, border-color 0.15s';
     
     card.innerHTML = `
-      <span style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--accent); letter-spacing:1px; background-color:var(--bg-secondary); padding:4px 8px; border-radius:6px; border:1px solid var(--border-color);">SÉRIE ESPECIAL</span>
+      <span style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--accent); letter-spacing:1px; background-color:var(--bg-secondary); padding:4px 8px; border-radius:6px; border:1px solid transparent;">SÉRIE ESPECIAL</span>
       <h3 style="font-size:16px; font-weight:700; margin:10px 0 6px 0; line-height:1.3;">${series.name}</h3>
       <p style="font-size:12px; color:var(--text-secondary); line-height:1.4; margin-bottom:14px;">${series.description}</p>
       <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--accent); font-weight:600;">
@@ -1033,8 +1325,8 @@ window.renderHomeSeries = function() {
       </div>
     `;
 
-    card.onmouseenter = () => { card.style.transform = 'translateY(-2px)'; };
-    card.onmouseleave = () => { card.style.transform = 'none'; };
+    card.onmouseenter = () => { card.style.transform = 'translateY(-2px)'; card.style.borderColor = 'var(--accent)'; };
+    card.onmouseleave = () => { card.style.transform = 'none'; card.style.borderColor = 'transparent'; };
     card.onclick = () => window.openArticle(seriesArticles[0].id);
 
     container.appendChild(card);
@@ -1137,9 +1429,9 @@ window.openCheatsheet = function(category: string) {
       return false;
     }
     if (query) {
-      const inCode = dica.textContent.toLowerCase().includes(query);
-      const inDesc = dica.description.toLowerCase().includes(query);
-      const inTitle = dica.article.title.toLowerCase().includes(query);
+      const inCode = normalizarTexto(dica.textContent).includes(normalizarTexto(query));
+      const inDesc = normalizarTexto(dica.description).includes(normalizarTexto(query));
+      const inTitle = normalizarTexto(dica.article.title).includes(normalizarTexto(query));
       if (!inCode && !inDesc && !inTitle) {
         return false;
       }
@@ -1153,22 +1445,24 @@ window.openCheatsheet = function(category: string) {
     
     const block = document.createElement('div');
     block.style.backgroundColor = 'var(--bg-card)';
-    block.style.border = 'none';
+    block.style.border = '1px solid transparent';
     block.style.borderRadius = '18px';
     block.style.padding = '20px';
     block.style.display = 'flex';
     block.style.flexDirection = 'column';
     block.style.gap = '12px';
     block.style.cursor = 'pointer';
-    block.style.transition = 'transform 0.15s';
+    block.style.transition = 'transform 0.15s, border-color 0.15s';
     block.style.height = '340px';
     block.style.overflow = 'hidden';
-
+    
     block.onmouseenter = () => {
       block.style.transform = 'translateY(-2px)';
+      block.style.borderColor = 'var(--accent)';
     };
     block.onmouseleave = () => {
       block.style.transform = 'none';
+      block.style.borderColor = 'transparent';
     };
 
     block.innerHTML = `
@@ -1179,7 +1473,7 @@ window.openCheatsheet = function(category: string) {
       <div style="flex-shrink: 0;">
         <h3 style="font-size:14px; font-weight:700; margin:0; display:flex; align-items:center; gap:6px; color: var(--text-primary);">⚡ ${dica.description}</h3>
       </div>
-      <div class="code-container" data-dica-id="${dica.id}" style="margin:0; border: 1px solid var(--border-color); background-color: var(--bg-secondary); flex-grow: 1; overflow-y: auto;">
+      <div class="code-container" data-dica-id="${dica.id}" style="margin:0; border: 1px solid transparent; background-color: var(--bg-secondary); flex-grow: 1; overflow-y: auto;">
         ${dica.innerHTML}
       </div>
     `;
@@ -1264,31 +1558,6 @@ function renderDrawerCategories() {
   
   list.innerHTML = '';
   
-  // "Todos os Artigos"
-  const allLi = document.createElement('li');
-  allLi.className = `category-item ${state.activeCategory === 'Todos' ? 'active' : ''}`;
-  allLi.style.display = 'flex';
-  allLi.style.justifyContent = 'space-between';
-  allLi.style.alignItems = 'center';
-  allLi.style.padding = '8px 12px';
-  allLi.style.borderRadius = '8px';
-  allLi.style.cursor = 'pointer';
-  allLi.style.gap = '8px';
-  
-  allLi.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 8px; flex: 1;" onclick="window.selectCategory('Todos'); window.closeDrawer();">
-      <span style="font-size: 14px; font-weight: 600;">Todos os Artigos</span>
-      <span class="category-count" style="font-size: 11px; color: var(--text-tertiary); opacity: 0.8;">(${ARTICLES.length})</span>
-    </div>
-  `;
-  list.appendChild(allLi);
-  
-  // Separator
-  const divider = document.createElement('div');
-  divider.className = 'sidebar-divider';
-  divider.style.margin = '8px 0';
-  list.appendChild(divider);
-  
   const createDrawerCatItem = (cat: string) => {
     const li = document.createElement('li');
     li.className = `category-item ${state.activeCategory === cat ? 'active' : ''}`;
@@ -1313,26 +1582,304 @@ function renderDrawerCategories() {
   };
   
   // Group 1: Core Concepts
+  const coreHeaderWrapper = document.createElement('div');
+  coreHeaderWrapper.style.display = 'flex';
+  coreHeaderWrapper.style.justifyContent = 'space-between';
+  coreHeaderWrapper.style.alignItems = 'center';
+  coreHeaderWrapper.style.marginTop = '16px';
+  coreHeaderWrapper.style.marginBottom = '8px';
+  coreHeaderWrapper.style.padding = '0 12px';
+  coreHeaderWrapper.style.cursor = 'pointer';
+  coreHeaderWrapper.style.userSelect = 'none';
+  
   const coreHeader = document.createElement('p');
   coreHeader.className = 'drawer-section-title';
+  coreHeader.style.margin = '0';
+  coreHeader.style.transition = 'color 0.2s ease';
   coreHeader.textContent = 'Core Concepts';
-  list.appendChild(coreHeader);
+  coreHeaderWrapper.appendChild(coreHeader);
   
-  const coreCats = ['Generics', 'Streams', 'Collections', 'OOP'];
-  coreCats.forEach(cat => {
-    list.appendChild(createDrawerCatItem(cat));
+  const coreToggleBtn = document.createElement('button');
+  coreToggleBtn.style.background = 'none';
+  coreToggleBtn.style.border = 'none';
+  coreToggleBtn.style.cursor = 'pointer';
+  coreToggleBtn.style.color = 'var(--text-tertiary)';
+  coreToggleBtn.style.display = 'flex';
+  coreToggleBtn.style.alignItems = 'center';
+  coreToggleBtn.style.justifyContent = 'center';
+  coreToggleBtn.style.padding = '4px';
+  coreToggleBtn.style.borderRadius = '4px';
+  coreToggleBtn.style.transition = 'color 0.2s';
+  coreToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${coreExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  coreToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    coreExpanded = !coreExpanded;
+    renderDrawerCategories();
+  };
+  coreHeaderWrapper.onclick = () => {
+    coreExpanded = !coreExpanded;
+    renderDrawerCategories();
+  };
+  coreHeaderWrapper.addEventListener('mouseenter', () => {
+    coreHeader.style.color = 'var(--accent)';
+    coreToggleBtn.style.color = 'var(--accent)';
+  });
+  coreHeaderWrapper.addEventListener('mouseleave', () => {
+    coreHeader.style.color = 'var(--text-tertiary)';
+    coreToggleBtn.style.color = 'var(--text-tertiary)';
   });
   
-  // Group 2: Advanced
+  coreHeaderWrapper.appendChild(coreToggleBtn);
+  list.appendChild(coreHeaderWrapper);
+  
+  const coreWrapper = document.createElement('div');
+  coreWrapper.style.overflow = 'hidden';
+  coreWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const coreCats = ['Generics', 'Collections', 'OOP'];
+  coreCats.forEach(cat => {
+    coreWrapper.appendChild(createDrawerCatItem(cat));
+  });
+
+  if (coreExpanded) {
+    coreWrapper.style.maxHeight = '200px';
+    coreWrapper.style.opacity = '1';
+    coreWrapper.style.marginBottom = '12px';
+  } else {
+    coreWrapper.style.maxHeight = '0px';
+    coreWrapper.style.opacity = '0';
+    coreWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(coreWrapper);
+  
+  // Group 2: Advanced Java
+  const advHeaderWrapper = document.createElement('div');
+  advHeaderWrapper.style.display = 'flex';
+  advHeaderWrapper.style.justifyContent = 'space-between';
+  advHeaderWrapper.style.alignItems = 'center';
+  advHeaderWrapper.style.marginTop = '8px';
+  advHeaderWrapper.style.marginBottom = '8px';
+  advHeaderWrapper.style.padding = '0 12px';
+  advHeaderWrapper.style.cursor = 'pointer';
+  advHeaderWrapper.style.userSelect = 'none';
+  
   const advHeader = document.createElement('p');
   advHeader.className = 'drawer-section-title';
-  advHeader.textContent = 'Advanced';
-  list.appendChild(advHeader);
+  advHeader.style.margin = '0';
+  advHeader.style.transition = 'color 0.2s ease';
+  advHeader.textContent = 'Advanced Java';
+  advHeaderWrapper.appendChild(advHeader);
   
-  const advCats = ['Concurrency', 'JVM', 'Spring', 'Misc'];
-  advCats.forEach(cat => {
-    list.appendChild(createDrawerCatItem(cat));
+  const advToggleBtn = document.createElement('button');
+  advToggleBtn.style.background = 'none';
+  advToggleBtn.style.border = 'none';
+  advToggleBtn.style.cursor = 'pointer';
+  advToggleBtn.style.color = 'var(--text-tertiary)';
+  advToggleBtn.style.display = 'flex';
+  advToggleBtn.style.alignItems = 'center';
+  advToggleBtn.style.justifyContent = 'center';
+  advToggleBtn.style.padding = '4px';
+  advToggleBtn.style.borderRadius = '4px';
+  advToggleBtn.style.transition = 'color 0.2s';
+  advToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${advExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  advToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    advExpanded = !advExpanded;
+    renderDrawerCategories();
+  };
+  advHeaderWrapper.onclick = () => {
+    advExpanded = !advExpanded;
+    renderDrawerCategories();
+  };
+  advHeaderWrapper.addEventListener('mouseenter', () => {
+    advHeader.style.color = 'var(--accent)';
+    advToggleBtn.style.color = 'var(--accent)';
   });
+  advHeaderWrapper.addEventListener('mouseleave', () => {
+    advHeader.style.color = 'var(--text-tertiary)';
+    advToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  advHeaderWrapper.appendChild(advToggleBtn);
+  list.appendChild(advHeaderWrapper);
+  
+  const advWrapper = document.createElement('div');
+  advWrapper.style.overflow = 'hidden';
+  advWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const advCats = ['Streams', 'Concurrency', 'JVM'];
+  advCats.forEach(cat => {
+    advWrapper.appendChild(createDrawerCatItem(cat));
+  });
+
+  if (advExpanded) {
+    advWrapper.style.maxHeight = '200px';
+    advWrapper.style.opacity = '1';
+    advWrapper.style.marginBottom = '12px';
+  } else {
+    advWrapper.style.maxHeight = '0px';
+    advWrapper.style.opacity = '0';
+    advWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(advWrapper);
+
+  // Group 3: Frameworks & Libs
+  const fwHeaderWrapper = document.createElement('div');
+  fwHeaderWrapper.style.display = 'flex';
+  fwHeaderWrapper.style.justifyContent = 'space-between';
+  fwHeaderWrapper.style.alignItems = 'center';
+  fwHeaderWrapper.style.marginTop = '8px';
+  fwHeaderWrapper.style.marginBottom = '8px';
+  fwHeaderWrapper.style.padding = '0 12px';
+  fwHeaderWrapper.style.cursor = 'pointer';
+  fwHeaderWrapper.style.userSelect = 'none';
+  
+  const fwHeader = document.createElement('p');
+  fwHeader.className = 'drawer-section-title';
+  fwHeader.style.margin = '0';
+  fwHeader.style.transition = 'color 0.2s ease';
+  fwHeader.textContent = 'Frameworks & Libs';
+  fwHeaderWrapper.appendChild(fwHeader);
+  
+  const fwToggleBtn = document.createElement('button');
+  fwToggleBtn.style.background = 'none';
+  fwToggleBtn.style.border = 'none';
+  fwToggleBtn.style.cursor = 'pointer';
+  fwToggleBtn.style.color = 'var(--text-tertiary)';
+  fwToggleBtn.style.display = 'flex';
+  fwToggleBtn.style.alignItems = 'center';
+  fwToggleBtn.style.justifyContent = 'center';
+  fwToggleBtn.style.padding = '4px';
+  fwToggleBtn.style.borderRadius = '4px';
+  fwToggleBtn.style.transition = 'color 0.2s';
+  fwToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${frameworksExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  fwToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    frameworksExpanded = !frameworksExpanded;
+    renderDrawerCategories();
+  };
+  fwHeaderWrapper.onclick = () => {
+    frameworksExpanded = !frameworksExpanded;
+    renderDrawerCategories();
+  };
+  fwHeaderWrapper.addEventListener('mouseenter', () => {
+    fwHeader.style.color = 'var(--accent)';
+    fwToggleBtn.style.color = 'var(--accent)';
+  });
+  fwHeaderWrapper.addEventListener('mouseleave', () => {
+    fwHeader.style.color = 'var(--text-tertiary)';
+    fwToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  fwHeaderWrapper.appendChild(fwToggleBtn);
+  list.appendChild(fwHeaderWrapper);
+  
+  const fwWrapper = document.createElement('div');
+  fwWrapper.style.overflow = 'hidden';
+  fwWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const fwCats = ['Spring', 'Security'];
+  fwCats.forEach(cat => {
+    fwWrapper.appendChild(createDrawerCatItem(cat));
+  });
+
+  if (frameworksExpanded) {
+    fwWrapper.style.maxHeight = '150px';
+    fwWrapper.style.opacity = '1';
+    fwWrapper.style.marginBottom = '12px';
+  } else {
+    fwWrapper.style.maxHeight = '0px';
+    fwWrapper.style.opacity = '0';
+    fwWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(fwWrapper);
+
+  // Group 4: Software Engineering
+  const seHeaderWrapper = document.createElement('div');
+  seHeaderWrapper.style.display = 'flex';
+  seHeaderWrapper.style.justifyContent = 'space-between';
+  seHeaderWrapper.style.alignItems = 'center';
+  seHeaderWrapper.style.marginTop = '8px';
+  seHeaderWrapper.style.marginBottom = '8px';
+  seHeaderWrapper.style.padding = '0 12px';
+  seHeaderWrapper.style.cursor = 'pointer';
+  seHeaderWrapper.style.userSelect = 'none';
+  
+  const seHeader = document.createElement('p');
+  seHeader.className = 'drawer-section-title';
+  seHeader.style.margin = '0';
+  seHeader.style.transition = 'color 0.2s ease';
+  seHeader.textContent = 'Engineering & Quality';
+  seHeaderWrapper.appendChild(seHeader);
+  
+  const seToggleBtn = document.createElement('button');
+  seToggleBtn.style.background = 'none';
+  seToggleBtn.style.border = 'none';
+  seToggleBtn.style.cursor = 'pointer';
+  seToggleBtn.style.color = 'var(--text-tertiary)';
+  seToggleBtn.style.display = 'flex';
+  seToggleBtn.style.alignItems = 'center';
+  seToggleBtn.style.justifyContent = 'center';
+  seToggleBtn.style.padding = '4px';
+  seToggleBtn.style.borderRadius = '4px';
+  seToggleBtn.style.transition = 'color 0.2s';
+  seToggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: ${seExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  `;
+  seToggleBtn.onclick = (e) => {
+    e.stopPropagation();
+    seExpanded = !seExpanded;
+    renderDrawerCategories();
+  };
+  seHeaderWrapper.onclick = () => {
+    seExpanded = !seExpanded;
+    renderDrawerCategories();
+  };
+  seHeaderWrapper.addEventListener('mouseenter', () => {
+    seHeader.style.color = 'var(--accent)';
+    seToggleBtn.style.color = 'var(--accent)';
+  });
+  seHeaderWrapper.addEventListener('mouseleave', () => {
+    seHeader.style.color = 'var(--text-tertiary)';
+    seToggleBtn.style.color = 'var(--text-tertiary)';
+  });
+  
+  seHeaderWrapper.appendChild(seToggleBtn);
+  list.appendChild(seHeaderWrapper);
+  
+  const seWrapper = document.createElement('div');
+  seWrapper.style.overflow = 'hidden';
+  seWrapper.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-bottom 0.35s ease';
+  
+  const seCats = ['Testing', 'Design Patterns', 'Misc'];
+  seCats.forEach(cat => {
+    seWrapper.appendChild(createDrawerCatItem(cat));
+  });
+
+  if (seExpanded) {
+    seWrapper.style.maxHeight = '200px';
+    seWrapper.style.opacity = '1';
+    seWrapper.style.marginBottom = '12px';
+  } else {
+    seWrapper.style.maxHeight = '0px';
+    seWrapper.style.opacity = '0';
+    seWrapper.style.marginBottom = '0px';
+  }
+  list.appendChild(seWrapper);
 }
 
 // Dismiss drawer on desktop screens
@@ -1341,6 +1888,40 @@ window.addEventListener('resize', debounce(() => {
     window.closeDrawer();
   }
 }, 100));
+
+function initBannerRotation() {
+  const trackEl = document.getElementById('home-banner-track') as HTMLElement | null;
+  if (!trackEl) return;
+
+  const totalImages = 6;
+  let currentIndex = 0;
+  
+  setInterval(() => {
+    currentIndex++;
+    trackEl.style.transition = 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)';
+    trackEl.style.transform = `translateX(-${currentIndex * 16.666}%)`;
+    
+    if (currentIndex === totalImages - 1) {
+      setTimeout(() => {
+        trackEl.style.transition = 'none';
+        trackEl.style.transform = 'translateX(0%)';
+        currentIndex = 0;
+      }, 900);
+    }
+  }, 7000);
+}
+
+window.updateWelcomeStats = function() {
+  const countSpan = document.getElementById('stats-articles-count');
+  if (countSpan) {
+    countSpan.textContent = ARTICLES.length.toString();
+  }
+  const categoryCountSpan = document.getElementById('stats-categories-count');
+  if (categoryCountSpan) {
+    const uniqueCategories = new Set(ARTICLES.map(art => art.category));
+    categoryCountSpan.textContent = uniqueCategories.size.toString();
+  }
+};
 
 /* --- DOM DOMContentLoaded INITIALIZER --- */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1359,10 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRecentHistory();
 
   // Populate welcome statistics
-  const countSpan = document.getElementById('stats-articles-count');
-  if (countSpan) {
-    countSpan.textContent = ARTICLES.length.toString();
-  }
+  window.updateWelcomeStats();
 
 
 
@@ -1374,5 +1952,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupKeyboardShortcuts();
   setupReadingProgressBar();
   window.renderHomeSeries();
+  initBannerRotation();
 });
 export {};

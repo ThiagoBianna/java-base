@@ -90,12 +90,6 @@ body {
   .app-header {
     padding: 0 24px;
   }
-  .search-and-nav-container {
-    max-width: 280px !important;
-  }
-  #nav-btn-cheatsheets {
-    display: none;
-  }
 }
 .header-container {
   display: flex;
@@ -570,7 +564,7 @@ body {
   background: rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid transparent;
   border-radius: 20px;
   padding: 48px 56px;
   max-width: 960px;
@@ -585,7 +579,7 @@ body {
   background: rgba(0, 0, 0, 0.03);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid transparent;
   border-radius: 14px;
   padding: 24px 28px;
   margin-bottom: 32px;
@@ -817,11 +811,11 @@ body.dark-theme .app-header {
 }
 body.dark-theme .article-container {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
 }
 body.dark-theme .article-header {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid transparent;
 }
 body.dark-theme .mobile-categories {
   background-color: #1d1d1f;
@@ -864,17 +858,16 @@ body.dark-theme .annotation { color: #ffa657; }
 /* --- HOME INTRO BANNER --- */
 .home-intro {
   background-color: var(--bg-card);
-  border: 0 !important; /* O zero com !important arranca a borda na marra */
+  border: 1px solid transparent;
   border-radius: 18px;
   padding: 32px;
   margin-bottom: 32px;
   animation: appleFadeIn 0.35s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
-body.dark-theme .home-intro, html.dark .home-intro {
-  border: 1px solid transparent !important; /* Garante a transparência no modo escuro */
-  border-color: transparent !important;
-}
-
 .home-intro-title {
   font-size: 24px;
   font-weight: 700;
@@ -883,8 +876,7 @@ body.dark-theme .home-intro, html.dark .home-intro {
   margin-bottom: 12px;
   display: flex;
   align-items: center;
-  justify-content: center !important; /* Força o alinhamento no centro */
-  width: 100%; /* Garante que ele ocupe todo o bloco para poder centralizar */
+  justify-content: center;
   gap: 10px;
 }
 .home-intro-text {
@@ -898,6 +890,7 @@ body.dark-theme .home-intro, html.dark .home-intro {
   gap: 24px;
   border-top: 1px solid var(--border-color);
   padding-top: 20px;
+  justify-content: center;
 }
 .stat-item {
   display: flex;
@@ -913,7 +906,7 @@ body.dark-theme .home-intro, html.dark .home-intro {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-tertiary);
-  margin-bottom: 2px;
+  margin-top: 2px;
 }
 
 /* --- IMAGE AND VIDEO CAPABILITIES --- */
@@ -1018,6 +1011,15 @@ body.dark-theme .nav-item.active, html.dark .nav-item.active {
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
+#recent-articles-section {
+  width: 100%;
+}
+@media (min-width: 768px) {
+  #recent-articles-section {
+    max-width: 50%;
+  }
+}
+
 .recent-card {
   flex: 0 0 240px;
   height: 72px;
@@ -1093,6 +1095,13 @@ body.dark-theme .nav-item.active, html.dark .nav-item.active {
 
 /* --- PRINT MEDIA STYLING --- */
 @media print {
+  html, body {
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    position: static !important;
+  }
   body {
     background: #ffffff !important;
     color: #000000 !important;
@@ -1102,18 +1111,37 @@ body.dark-theme .nav-item.active, html.dark .nav-item.active {
     display: none !important;
   }
   .app-layout {
+    display: block !important;
     height: auto !important;
     overflow: visible !important;
+    position: static !important;
+    width: auto !important;
   }
   .main-content {
+    display: block !important;
     height: auto !important;
     overflow: visible !important;
+    position: static !important;
+    width: auto !important;
   }
   .main-scroll-area {
+    display: block !important;
+    height: auto !important;
     overflow: visible !important;
+    position: static !important;
     padding: 0 !important;
+    width: auto !important;
+  }
+  #home-view, #article-view, #cheatsheet-view, #favorites-view, #quiz-view {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
   }
   .article-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;

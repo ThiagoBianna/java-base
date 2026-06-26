@@ -1,3 +1,11 @@
+export function normalizarTexto(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 export function formatDate(dateStr: string): string {
   const parts = dateStr.split('-');
   if (parts.length !== 3) return dateStr;
@@ -47,19 +55,44 @@ export function getSearchSnippet(contentHtml: string, query: string): string {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = contentHtml;
   
+  const normQuery = normalizarTexto(query);
+  if (!normQuery) return '';
+
   // Search in code blocks first
   const codeContainers = Array.from(tempDiv.querySelectorAll('.code-container pre code, pre code, code'));
   for (const codeEl of codeContainers) {
     const text = codeEl.textContent || '';
-    const idx = text.toLowerCase().indexOf(query);
+    const normText = normalizarTexto(text);
+    const idx = normText.indexOf(normQuery);
     if (idx !== -1) {
       const lines = text.split('\n');
-      const matchingLine = lines.find(line => line.toLowerCase().includes(query));
+      const matchingLine = lines.find(line => normalizarTexto(line).includes(normQuery));
       if (matchingLine) {
-        const lineIdx = matchingLine.toLowerCase().indexOf(query);
-        const before = matchingLine.substring(0, lineIdx);
-        const match = matchingLine.substring(lineIdx, lineIdx + query.length);
-        const after = matchingLine.substring(lineIdx + query.length);
+        let matchStart = matchingLine.toLowerCase().indexOf(query.toLowerCase());
+        let matchLength = query.length;
+        if (matchStart === -1) {
+          for (let i = 0; i <= matchingLine.length - query.length + 5; i++) {
+            for (let len = Math.max(1, query.length - 2); len <= query.length + 2; len++) {
+              if (i + len <= matchingLine.length) {
+                const sub = matchingLine.substring(i, i + len);
+                if (normalizarTexto(sub).includes(normQuery)) {
+                  matchStart = i;
+                  matchLength = len;
+                  break;
+                }
+              }
+            }
+            if (matchStart !== -1) break;
+          }
+        }
+        if (matchStart === -1) {
+          matchStart = 0;
+          matchLength = query.length;
+        }
+
+        const before = matchingLine.substring(0, matchStart);
+        const match = matchingLine.substring(matchStart, matchStart + matchLength);
+        const after = matchingLine.substring(matchStart + matchLength);
         
         return `
           <div class="code-container" style="margin-top: 8px; border: 1px solid var(--accent); background-color: var(--bg-secondary);">
@@ -75,26 +108,69 @@ export function getSearchSnippet(contentHtml: string, query: string): string {
   const elements = Array.from(tempDiv.querySelectorAll('p, h3, h4, li'));
   for (const el of elements) {
     const text = el.textContent || '';
-    const idx = text.toLowerCase().indexOf(query);
+    const normText = normalizarTexto(text);
+    const idx = normText.indexOf(normQuery);
     if (idx !== -1) {
-      const start = Math.max(0, idx - 60);
-      const end = Math.min(text.length, idx + query.length + 80);
-      let snippet = text.substring(start, end).replace(/\s+/g, ' ');
-      if (start > 0) snippet = '...' + snippet;
-      if (end < text.length) snippet = snippet + '...';
-      
-      const snipIdx = snippet.toLowerCase().indexOf(query);
-      if (snipIdx !== -1) {
-        const before = snippet.substring(0, snipIdx);
-        const match = snippet.substring(snipIdx, snipIdx + query.length);
-        const after = snippet.substring(snipIdx + query.length);
-        
-        return `
-          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-top: 6px;">
-            ${escapeHtml(before)}<mark style="background-color: #ffd166; color: #000; border-radius: 2px; padding: 0 2px; font-weight:600;">${escapeHtml(match)}</mark>${escapeHtml(after)}
-          </p>
-        `;
+      let matchStart = text.toLowerCase().indexOf(query.toLowerCase());
+      let matchLength = query.length;
+      if (matchStart === -1) {
+        for (let i = 0; i <= text.length - query.length + 5; i++) {
+          for (let len = Math.max(1, query.length - 2); len <= query.length + 2; len++) {
+            if (i + len <= text.length) {
+              const sub = text.substring(i, i + len);
+              if (normalizarTexto(sub).includes(normQuery)) {
+                matchStart = i;
+                matchLength = len;
+                break;
+              }
+            }
+          }
+          if (matchStart !== -1) break;
+        }
       }
+      if (matchStart === -1) {
+        matchStart = idx;
+        matchLength = query.length;
+      }
+
+      const start = Math.max(0, matchStart - 60);
+      const end = Math.min(text.length, matchStart + matchLength + 80);
+      let snippet = text.substring(start, end).replace(/\s+/g, ' ');
+      
+      let snipMatchStart = snippet.toLowerCase().indexOf(query.toLowerCase());
+      let snipMatchLength = query.length;
+      if (snipMatchStart === -1) {
+        for (let i = 0; i <= snippet.length - query.length + 5; i++) {
+          for (let len = Math.max(1, query.length - 2); len <= query.length + 2; len++) {
+            if (i + len <= snippet.length) {
+              const sub = snippet.substring(i, i + len);
+              if (normalizarTexto(sub).includes(normQuery)) {
+                snipMatchStart = i;
+                snipMatchLength = len;
+                break;
+              }
+            }
+          }
+          if (snipMatchStart !== -1) break;
+        }
+      }
+      if (snipMatchStart === -1) {
+        snipMatchStart = 0;
+        snipMatchLength = query.length;
+      }
+
+      let before = snippet.substring(0, snipMatchStart);
+      const match = snippet.substring(snipMatchStart, snipMatchStart + snipMatchLength);
+      let after = snippet.substring(snipMatchStart + snipMatchLength);
+      
+      if (start > 0) before = '...' + before;
+      if (end < text.length) after = after + '...';
+      
+      return `
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-top: 6px;">
+          ${escapeHtml(before)}<mark style="background-color: #ffd166; color: #000; border-radius: 2px; padding: 0 2px; font-weight:600;">${escapeHtml(match)}</mark>${escapeHtml(after)}
+        </p>
+      `;
     }
   }
   

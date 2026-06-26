@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.2" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Java Base — Base de Conhecimento Pessoal</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238b5cf6'><path d='M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z'/><path d='M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z'/></svg>" />
@@ -42,14 +42,14 @@
             <span class="logo-text">Java <span style="color: var(--accent);">Base</span></span>
           </div>
         </div>
-
-        <div class="search-and-nav-container" style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 540px;">
+        
+        <div class="search-and-nav-container" style="display: flex; align-items: center; gap: 28px; flex: 1; max-width: 540px;">
           <div class="search-wrapper" style="margin: 0; flex: 1; max-width: 100%;">
             <svg class="search-icon" viewBox="0 0 16 16" fill="currentColor">
               <path d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.72 3.72a.75.75 0 1 1-1.06 1.06l-3.72-3.72ZM11.5 7a4.5 4.5 0 1 0-9 0 4.5 4.5 0 0 0 9 0Z"/>
             </svg>
             <input type="text" id="search-input" placeholder="Buscar..." autocomplete="off">
-
+            
             <button id="search-clear-btn" class="clear-btn hidden" title="Limpar busca" onclick="clearSearch()">
               <svg viewBox="0 0 16 16" fill="currentColor">
                 <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 1 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
@@ -58,11 +58,11 @@
           </div>
           <span id="nav-btn-cheatsheets" class="nav-item" style="white-space: nowrap; font-weight: 600;" onclick="openCheatsheet(state.activeCategory)">Dicas</span>
         </div>
-
+        
         <div class="header-right-meta">
           <span class="tag-version">Java 21 LTS</span>
         </div>
-
+        
         <div style="display: flex; align-items: center; gap: 8px;">
           <button id="theme-toggle-btn" class="theme-toggle-btn" title="Alternar tema" onclick="toggleTheme()" style="margin-left: 0;">
             <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="currentColor">
@@ -72,9 +72,29 @@
               <path d="M12.3 22c5.36 0 9.7-4.34 9.7-9.7 0-2.5-.95-4.78-2.51-6.5-.42-.46-1.12-.27-1.28.32-.86 3.14-3.73 5.46-7.14 5.46-1.63 0-3.13-.53-4.35-1.43-.52-.39-1.25-.02-1.25.63A9.704 9.704 0 0 0 12.3 22z"/>
             </svg>
           </button>
-
+          
+          <!-- BOTÃO HAMBURGUER (Mobile) -->
           <button id="menu-hamburger-btn" class="menu-hamburger-btn" onclick="openDrawer()" aria-label="Abrir menu">
-            <svg viewBox="0 0 22 16" fill="
+            <svg viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="0" y1="1" x2="22" y2="1" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="0" y1="8" x2="22" y2="8" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="0" y1="15" x2="22" y2="15" stroke="var(--text-primary)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div id="reading-progress" class="hidden" style="position: fixed; top: 52px; left: 0; height: 3px; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%); width: 0%; z-index: 101; transition: width 0.08s linear;"></div>
+
+    <div class="app-layout">
+      <!-- SIDEBAR DESKTOP -->
+      <aside class="sidebar">
+        <div>
+          <p class="sidebar-title">Categories</p>
+          <ul id="sidebar-categories" class="category-list">
+            <!-- Injetado por JS -->
+          </ul>
+        </div>
         
 
 
@@ -97,18 +117,22 @@
           <!-- VIEW 1: HOME (LISTAGEM DE ARTIGOS) -->
           <div id="home-view" class="view">
             <!-- BANNER PRINCIPAL GRANDE -->
-            <div class="home-hero-banner" style="width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); height: 320px;">
-              <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZGVzZW52b2x2ZWRvciUyMGphdmF8ZW58MHx8MHx8fDA%3D" 
-                   alt="Java Base Banner" 
-                   referrerPolicy="no-referrer" 
-                   style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease-out;" 
-                   onmouseenter="this.style.transform='scale(1.02)'" 
-                   onmouseleave="this.style.transform='scale(1.0)'">
+            <div class="home-hero-banner" style="width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); height: 320px; position: relative; transition: transform 0.5s ease-out;"
+                 onmouseenter="this.style.transform='scale(1.01)'" 
+                 onmouseleave="this.style.transform='scale(1.0)'">
+              <div id="home-banner-track" style="display: flex; width: 600%; height: 100%; transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(0%);">
+                <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?fm=jpg&q=60&w=3000&auto=format&fit=crop" alt="Java Base Banner" referrerPolicy="no-referrer" style="width: 16.666%; height: 100%; object-fit: cover;">
+                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?fm=jpg&q=60&w=3000&auto=format&fit=crop" alt="Java Base Banner 2" referrerPolicy="no-referrer" style="width: 16.666%; height: 100%; object-fit: cover;">
+                <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?fm=jpg&q=60&w=3000&auto=format&fit=crop" alt="Java Base Banner 3" referrerPolicy="no-referrer" style="width: 16.666%; height: 100%; object-fit: cover;">
+                <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?fm=jpg&q=60&w=3000&auto=format&fit=crop" alt="Java Base Banner 4" referrerPolicy="no-referrer" style="width: 16.666%; height: 100%; object-fit: cover;">
+                <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?fm=jpg&q=60&w=3000&auto=format&fit=crop" alt="Java Base Banner 5" referrerPolicy="no-referrer" style="width: 16.666%; height: 100%; object-fit: cover;">
+                <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?fm=jpg&q=60&w=3000&auto=format&fit=crop" alt="Java Base Banner Clone" referrerPolicy="no-referrer" style="width: 16.666%; height: 100%; object-fit: cover;">
+              </div>
             </div>
             
             <!-- INTRODUÇÃO DO SITE / BLOCO BEM VINDO -->
-            <div id="home-intro-card" class="home-intro border-0" style="border: none !important;">
-              <h2 class="home-intro-title flex items-center justify-center w-full gap-2.5">
+            <div id="home-intro-card" class="home-intro">
+              <h2 class="home-intro-title">
                 <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: var(--accent);">
                   <path d="M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z"/>
                   <path d="M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z"/>
@@ -124,7 +148,7 @@
                   <span class="stat-lbl">Artigos</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-val">8</span>
+                  <span class="stat-val" id="stats-categories-count">8</span>
                   <span class="stat-lbl">Categorias</span>
                 </div>
                 <div class="stat-item">
@@ -299,7 +323,7 @@
             <path d="M2 21h18v-2H2v2M20 8h-2V5h2V3h-2c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v5c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4v-3h2c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2m-4 7c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4h12v4m4-4h-2V9h2v1Z"/>
             <path d="M6 1h2v3H6zm4-1h2v4h-2zm4 2h2v2h-2z"/>
           </svg>
-          <span style="font-weight: 600; font-size: 15px; color: var(--text-primary);">Java Base</span>
+          <span style="font-weight: 600; font-size: 15px; color: var(--text-primary);">Java <span style="color: var(--accent);">Base</span></span>
         </div>
         <button class="drawer-close-btn" onclick="closeDrawer()" aria-label="Fechar menu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
